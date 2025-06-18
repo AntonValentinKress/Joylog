@@ -7,3 +7,8 @@ function openNav() {
 function closeNav() {
   document.getElementById("mySidebar").style.width = "0";
 } 
+
+function getDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+}

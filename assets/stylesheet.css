@@ -19,15 +19,8 @@ div.header-content-navigation {
     padding: 0px;
     margin: 0px;
     height: 100%;
-    width: 100%;
+    width: 100vw;
     grid-template-rows: 1fr 10fr 1fr;
-}
-
-div.profilbild {
-    border: 1px solid rgba(var(--akzent), 1);
-    border-radius: 100%;
-    height: 50%;
-    width: calc(height);
 }
 
 div.header {
@@ -97,3 +90,12 @@ button.nav-button:hover {
     color: white;
 }
 
+input.date-input {
+    color: rgba(var(--schriftfarbe), 1);
+    display: flex;
+    padding: 20px;
+    width: 50vw;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--akzent), 1);
+}
