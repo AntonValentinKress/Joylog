@@ -1,0 +1,99 @@
+:root {
+    --hintergrund: 22, 31, 40;
+    --kontrast: 68, 118, 251;
+    --akzent: 35, 44, 53;
+    --schriftfarbe: 255, 255, 255;
+}
+
+html, body {
+    margin: 0px;
+    padding: 0px;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(var(--hintergrund), 1);
+    color: rgba(var(--schriftfarbe), 1);
+}
+
+div.header-content-navigation {
+    display: grid;
+    padding: 0px;
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+    grid-template-rows: 1fr 10fr 1fr;
+}
+
+div.profilbild {
+    border: 1px solid rgba(var(--akzent), 1);
+    border-radius: 100%;
+    height: 50%;
+    width: calc(height);
+}
+
+div.header {
+    padding: 0px;
+    margin: 0px;
+
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr;
+
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    
+    border-bottom: 1px solid rgba(var(--akzent), 1);
+}
+
+div.content {
+    padding: 0px;
+    margin: 0px;
+}
+
+div.cards-wrapper {
+    margin: 0px;
+    padding: 0px;
+    height: calc(100vh/12*10);
+    width: 100vw;
+    overflow: scroll;
+}
+
+div.navigation {
+    border-top: 1px solid rgba(var(--akzent), 1);
+    padding: 0px;
+    margin: 0px;
+    justify-content: center;
+    align-items: center;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+button.nav-button {
+    background-color: rgba(0, 0, 0, 0);
+    height: 100%;
+    width: 100%;
+    font-size: 100%;
+    padding: 0px;
+    margin: 0px;
+    border: 0px solid ;    
+}
+
+button.nav-button:hover {
+    background-color: rgba(var(--kontrast), 0.4);
+}
+
+/*Google Icons - Lokal*/
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('./MaterialIcons-Regular.ttf') format('truetype');
+}
+.material-icons {
+    font-family: 'Material Icons';
+    display: inline-block;
+    text-rendering: optimizeLegibility;
+    text-align: center;
+    color: white;
+}
+
