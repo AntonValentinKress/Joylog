@@ -40,6 +40,10 @@ div.header {
 div.content {
     padding: 0px;
     margin: 0px;
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100vw;
+    overflow: scroll;
 }
 
 div.cards-wrapper {
@@ -94,8 +98,18 @@ input.date-input {
     color: rgba(var(--schriftfarbe), 1);
     display: flex;
     padding: 20px;
-    width: 50vw;
     align-items: center;
     justify-content: center;
     background-color: rgba(var(--akzent), 1);
+    border: 0px solid white;
+}
+
+input.time-input {
+    color: rgba(var(--schriftfarbe), 1);
+    display: flex;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--akzent), 1);
+    border: 0px solid white;
 }

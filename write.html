@@ -23,7 +23,11 @@
 
         </div>
         <div class="content">
-            <input class="date-input" type="date" id="date" name="date" onload="getDate()">
+            <div style="width: 100vw; height: 1vh; display: grid; grid-template-columns: 1fr 1fr;">
+                <input class="date-input" type="date" id="date" name="date" onload="getDate()">
+                <input class="time-input" type="time" id="time" name="time" onload="getTime()">
+            </div>
+            <input class="text-input" type="text" id="text" name="text" placeholder="Was gibts?" >
         </div>
         <div class="navigation">
             <button class="nav-button" onclick="location.href='index.html'"><span class="material-icons">home</span></button>
@@ -38,7 +42,9 @@
     <script src="assets/script.js"></script>   
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-        getDate();});
+            getDate();
+            getTime();
+        });
     </script>
     
 </body>
