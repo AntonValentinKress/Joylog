@@ -5,12 +5,10 @@
   "images": [
     {
       "filename": "fluss.jpg",
-      "description": "Flussufer",
       "image": "BASE64_IMAGE_1"
     },
     {
       "filename": "baum.jpg",
-      "description": "Ein Baum",
       "image": "BASE64_IMAGE_2"
     }
   ],

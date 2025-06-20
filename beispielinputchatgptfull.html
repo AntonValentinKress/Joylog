@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Joy.log 📖</title>
+
+    <meta name="description" content="Joy.log dient der dokumentation von glücklichen Lebensmomenten, 
+        da wir leider dazu tendieren nur die schlechten Erfahrungen in Erinnerung zu behalten"/>
+    <meta name="author" content="Anton Valentin Kreß"/>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <link rel="stylesheet" href="assets/stylesheet.css"/>
+    <link rel="stylesheet" href="assets/modals.css"/>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <div class="header-content-navigation">
+        <div class="header">
+            <div></div>
+            <div><span class="material-icons">auto_stories</span></div>
+        </div>
+        <div class="write-content">
+            <div style="width: 100vw; height: 100%; display: grid; grid-template-columns: 1fr 1fr;">
+                <input class="date-input" type="date" id="date" name="date" onload="getDate()">
+                <input class="time-input" type="time" id="time" name="time" onload="getTime()">
+            </div>
+            <textarea class="text-input" placeholder="@you: Was gibts?"></textarea>
+            <div style="padding-left: 3vw; position: relative; z-index: 10;">
+                <button class="media-button" id="btnImage"><span class="material-icons">add_a_photo</span></button>
+                <button class="media-button" id="btnLocation"><span class="material-icons">add_location</span></button>
+                <button class="media-button" id="btnScore"><span class="material-icons">diamond</span></button>
+            </div>
+            <div id="previewContainer" style="display: flex; flex-wrap: wrap; padding: 1em;"></div>
+        </div>
+        <div class="navigation">
+            <button class="nav-button" onclick="location.href='index'"><span class="material-icons">home</span></button>
+            <button class="nav-button" onclick="location.href='write'" style="background-color: rgb(35, 44, 53);"><span class="material-icons">edit</span></button>
+            <button class="nav-button"><span class="material-icons">calendar_month</span></button>
+            <button class="nav-button"><span class="material-icons">dashboard</span></button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modalImage" class="modal hidden">
+      <div style="background: grey; padding: 1em; border-radius: 12px; max-width: 90vw;">
+        <h2>Bild(er) auswählen</h2>
+        <input id="imageInput" type="file" accept="image/*" multiple />
+        <div style="margin-top: 1em; text-align: right;">
+          <button onclick="closeModal(modalImage)">Abbrechen</button>
+          <button onclick="saveImages()">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalLocation" class="modal hidden">
+      <div style="background: white; padding: 1em; border-radius: 12px; width: 80vw; height: 80vh; display: flex; flex-direction: column;">
+        <h2>Position wählen</h2>
+        <div id="map" style="flex: 1; margin: 1em 0;"></div>
+        <div style="text-align: right;">
+          <button onclick="closeModal(modalLocation)">Abbrechen</button>
+          <button onclick="saveLocation()">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalScore" class="modal hidden">
+      <div style="background: white; padding: 1em; border-radius: 12px; max-width: 90vw;">
+        <h2>Stimmung wählen</h2>
+        <input type="range" id="scoreSlider" min="0" max="100" value="50" style="width: 100%;">
+        <p id="scoreLabel" style="text-align: center; margin-top: 1em;">Neutral</p>
+        <div style="text-align: right;">
+          <button onclick="closeModal(modalScore)">Abbrechen</button>
+          <button onclick="saveScore()">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/script.js"></script>   
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            getDate();
+            getTime();
+
+            document.getElementById("btnImage").addEventListener("click", () => openModal(modalImage));
+            document.getElementById("btnLocation").addEventListener("click", () => {
+              openModal(modalLocation);
+              setTimeout(initMap, 50);
+            });
+            document.getElementById("btnScore").addEventListener("click", () => openModal(modalScore));
+        });
+
+        // Globale Variablen
+        let selectedImages = [];
+        let selectedLatLng = null;
+        let selectedScore = 50;
+
+        const btnImage = document.getElementById("btnImage");
+        const btnLocation = document.getElementById("btnLocation");
+        const btnScore = document.getElementById("btnScore");
+
+        // Modalfunktionen
+        const openModal = (el) => el.classList.remove("hidden");
+        const closeModal = (el) => el.classList.add("hidden");
+
+        // Bilder
+        function saveImages() {
+          const files = document.getElementById("imageInput").files;
+          for (let file of files) {
+            selectedImages.push(file);
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const wrapper = document.createElement("div");
+              wrapper.className = "preview-img-wrapper";
+
+              const img = document.createElement("img");
+              img.src = e.target.result;
+              img.className = "preview-img";
+
+              const removeBtn = document.createElement("button");
+              removeBtn.className = "remove-btn";
+              removeBtn.innerHTML = "&times;";
+              removeBtn.onclick = () => {
+                wrapper.remove();
+                selectedImages = selectedImages.filter(i => i !== file);
+                updateActiveButtons();
+              };
+
+              wrapper.appendChild(img);
+              wrapper.appendChild(removeBtn);
+              document.getElementById("previewContainer").appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
+          }
+          updateActiveButtons();
+          closeModal(modalImage);
+        }
+
+        // Leaflet Map
+        let map;
+        let marker;
+        function initMap() {
+          if (!map) {
+            map = L.map('map').setView([51.1657, 10.4515], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap-Mitwirkende'
+            }).addTo(map);
+            map.on('click', (e) => {
+              selectedLatLng = e.latlng;
+              if (marker) marker.remove();
+              marker = L.marker(selectedLatLng).addTo(map);
+              updateActiveButtons();
+            });
+
+            // Karte auf aktuelle Position des Clients zentrieren
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition((pos) => {
+                const latlng = [pos.coords.latitude, pos.coords.longitude];
+                map.setView(latlng, 13);
+              });
+            }
+          } else {
+            map.invalidateSize();
+          }
+        }
+        function saveLocation() {
+          console.log("Position gespeichert:", selectedLatLng);
+          closeModal(modalLocation);
+          updateActiveButtons();
+        }
+
+        // Score
+        const slider = document.getElementById("scoreSlider");
+        const label = document.getElementById("scoreLabel");
+        slider.addEventListener("input", function () {
+          const v = +slider.value;
+          selectedScore = v;
+          let txt = 'Neutral';
+          if (v < 20) txt = 'Sehr unglücklich';
+          else if (v < 40) txt = 'Unglücklich';
+          else if (v < 60) txt = 'Neutral';
+          else if (v < 80) txt = 'Glücklich';
+          else txt = 'Sehr glücklich';
+          label.textContent = txt;
+        });
+        function saveScore() {
+          console.log("Score gespeichert:", selectedScore);
+          closeModal(modalScore);
+          updateActiveButtons();
+        }
+
+        // Buttons aktiv färben
+        function updateActiveButtons() {
+          btnImage.classList.toggle("active-button", selectedImages.length > 0);
+          btnLocation.classList.toggle("active-button", selectedLatLng !== null);
+          btnScore.classList.toggle("active-button", selectedScore !== 50);
+        }
+    </script>
+</body>
+</html>

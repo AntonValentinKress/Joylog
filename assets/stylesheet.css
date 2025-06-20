@@ -46,6 +46,15 @@ div.content {
     overflow: scroll;
 }
 
+div.write-content {
+    padding: 0px;
+    margin: 0px;
+    display: grid;
+    grid-template-rows: 1fr 20fr 2fr;
+    width: 100vw;
+    overflow: scroll;
+}
+
 div.cards-wrapper {
     margin: 0px;
     padding: 0px;
@@ -76,7 +85,7 @@ button.nav-button {
 }
 
 button.nav-button:hover {
-    background-color: rgba(var(--kontrast), 0.4);
+    background-color: rgba(var(--akzent), 0.5);
 }
 
 /*Google Icons - Lokal*/
@@ -97,14 +106,26 @@ button.nav-button:hover {
 input.date-input {
     color: rgba(var(--schriftfarbe), 1);
     display: flex;
-    padding: 20px;
+    height: 100%;
     align-items: center;
     justify-content: center;
     background-color: rgba(var(--akzent), 1);
     border: 0px solid white;
+    text-align: center;
 }
 
 input.time-input {
+    color: rgba(var(--schriftfarbe), 1);
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--akzent), 1);
+    border: 0px solid white;
+    text-align: center;
+}
+
+textarea.text-input {
     color: rgba(var(--schriftfarbe), 1);
     display: flex;
     padding: 20px;
@@ -112,4 +133,20 @@ input.time-input {
     justify-content: center;
     background-color: rgba(var(--akzent), 1);
     border: 0px solid white;
+    text-align: left;
+    vertical-align: top;
+    resize: none;
+    border-top: 1px solid rgba(var(--hintergrund),1);
+}
+
+button.media-button {
+    background-color: rgba(var(--hintergrund), 1);
+    color: rgba(var(--kontrast),1);
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    border: 0px;
+}
+
+button.media-button:hover {
+    background-color: rgba(var(--akzent), 0.5);
 }

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Eingabe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    input, textarea, button, select {
+      display: block;
+      margin-bottom: 15px;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #extra-fields > div {
+      margin-top: 20px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
+    }
+
+    .floating-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 30px;
+      cursor: pointer;
+    }
+
+    #map {
+      height: 300px;
+      margin-bottom: 15px;
+    }
+
+    .lock-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Eintrag erstellen</h2>
+
+  <form id="entryForm">
+    <label>Datum</label>
+    <input type="date" name="date" required>
+
+    <label>Zeit</label>
+    <input type="time" name="time" required>
+
+    <label>Text</label>
+    <textarea name="text" rows="4" required></textarea>
+
+    <div id="extra-fields"></div>
+
+    <button type="submit">Absenden</button>
+  </form>
+
+  <button class="floating-button" id="addFieldBtn">+</button>
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script>
+    let addedFields = {
+      images: false,
+      location: false,
+      score: false
+    };
+
+    let map, centerMarkerLocked = true, lat = null, lng = null;
+
+    document.getElementById('addFieldBtn').addEventListener('click', () => {
+      const extra = document.getElementById('extra-fields');
+
+      // Bilder hinzufügen
+      if (!addedFields.images) {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <label>Bilder</label>
+          <input type="file" name="images" multiple accept="image/*">
+        `;
+        extra.appendChild(div);
+        addedFields.images = true;
+        return;
+      }
+
+      // Ort hinzufügen
+      if (!addedFields.location) {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <label>Ort</label>
+          <div id="map"></div>
+          <button type="button" class="lock-btn" id="toggleLock">🔒</button>
+        `;
+        extra.appendChild(div);
+        addedFields.location = true;
+        initMap();
+        return;
+      }
+
+      // Score hinzufügen
+      if (!addedFields.score) {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <label>Bewertung (1-10)</label>
+          <input type="number" name="score" min="1" max="10">
+        `;
+        extra.appendChild(div);
+        addedFields.score = true;
+        return;
+      }
+    });
+
+    function initMap() {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+
+        map = L.map('map').setView([lat, lng], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        const centerIcon = L.divIcon({className: 'center-marker'});
+        const marker = L.marker(map.getCenter()).addTo(map);
+
+        map.on('move', () => {
+          if (!centerMarkerLocked) {
+            const center = map.getCenter();
+            lat = center.lat;
+            lng = center.lng;
+            marker.setLatLng(center);
+          }
+        });
+
+        document.getElementById('toggleLock').addEventListener('click', () => {
+          centerMarkerLocked = !centerMarkerLocked;
+          const btn = document.getElementById('toggleLock');
+          btn.textContent = centerMarkerLocked ? '🔒' : '🔓';
+        });
+      });
+    }
+
+    document.getElementById('entryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const json = {};
+
+      json.date = form.date.value;
+      json.time = form.time.value;
+      json.text = form.text.value;
+
+      // Images
+      if (addedFields.images) {
+        const files = form.querySelector('input[name="images"]').files;
+        if (files.length > 0) {
+          json.images = [];
+          for (let file of files) {
+            const base64 = await toBase64(file);
+            json.images.push({
+              filename: file.name,
+              image: base64.split(',')[1] // nur der Base64-Teil
+            });
+          }
+        }
+      }
+
+      // Location
+      if (addedFields.location && lat !== null && lng !== null) {
+        json.location = {
+          lat: parseFloat(lat.toFixed(6)),
+          long: parseFloat(lng.toFixed(6))
+        };
+      }
+
+      // Score
+      if (addedFields.score) {
+        const scoreVal = form.querySelector('input[name="score"]').value;
+        if (scoreVal) {
+          json.score = parseInt(scoreVal);
+        }
+      }
+
+      console.log(JSON.stringify(json, null, 2));
+    });
+
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+    }
+  </script>
+</body>
+</html>

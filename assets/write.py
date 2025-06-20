@@ -13,6 +13,7 @@ def insert_data(data):
 
     joylog_id = str(uuid.uuid4())
     location_id = str(uuid.uuid4())
+    image_id = str(uuid.uuid4())
 
     # Insert location
     cur.execute("""
@@ -26,18 +27,17 @@ def insert_data(data):
         VALUES (?, ?, ?, ?, ?, ?)
     """, (
         data["date"], data["time"], data["text"],
-        joylog_id,  # Use joylog_id as imageID field
+        image_id,
         location_id, data["score"]
     ))
 
     # Insert each image
     for img in data["images"]:
-        image_id = str(uuid.uuid4())
         image_blob = base64.b64decode(img["image"])
         cur.execute("""
-            INSERT INTO images (imageID, joylogID, image, filename, description)
+            INSERT INTO images (imageID, image, filename)
             VALUES (?, ?, ?, ?, ?)
-        """, (image_id, joylog_id, image_blob, img["filename"], img["description"]))
+        """, (image_id, image_blob, img["filename"]))
 
     con.commit()
     con.close()

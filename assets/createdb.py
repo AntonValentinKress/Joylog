@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     #Create Tables
     cur.execute("CREATE TABLE joylog(date, time, text, imageID, locationID, score)")
-    cur.execute("CREATE TABLE images(imageID, image, filename, description)")
+    cur.execute("CREATE TABLE images(imageID, image, filename)")
     cur.execute("CREATE TABLE locations(locationID, long, lat)")
 
     #Create Indexes

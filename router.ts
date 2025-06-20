@@ -18,6 +18,13 @@ router.get('/index', async (ctx) => {
     ctx.response.body = bytes;
 });
 
+router.get('/write', async (ctx) => {
+
+    const bytes = await Deno.readFile('write.html');
+
+    ctx.response.body = bytes;
+});
+
 router.get('/assets/:filename', async (ctx) => {
     const filename = ctx.params.filename;
     try {
@@ -28,6 +35,19 @@ router.get('/assets/:filename', async (ctx) => {
         console.error("Fehler:", err);
         ctx.response.status = 404;
         ctx.response.body = "Assets bereitgestellt.";
+    }
+});
+
+router.get('/favicon/:filename', async (ctx) => {
+    const filename = ctx.params.filename;
+    try {
+        await send(ctx, filename, {
+            root: './favicon',
+        });
+    } catch (err) {
+        console.error("Fehler:", err);
+        ctx.response.status = 404;
+        ctx.response.body = "Favicon bereitgestellt.";
     }
 });
 

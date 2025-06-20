@@ -10,6 +10,11 @@
         da wir leider dazu tendieren nur die schlechten Erfahrungen in Erinnerung zu behalten"/>
     <meta name="author" content="Anton Valentin Kreß"/>
 
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
     <link rel="Stylesheet" href="assets/stylesheet.css"/>
 
 </head>
@@ -22,16 +27,22 @@
             
 
         </div>
-        <div class="content">
-            <div style="width: 100vw; height: 1vh; display: grid; grid-template-columns: 1fr 1fr;">
+        <div class="write-content">
+            <div style="width: 100vw; height: 100%; display: grid; grid-template-columns: 1fr 1fr;">
                 <input class="date-input" type="date" id="date" name="date" onload="getDate()">
                 <input class="time-input" type="time" id="time" name="time" onload="getTime()">
             </div>
-            <input class="text-input" type="text" id="text" name="text" placeholder="Was gibts?" >
+            <!--<input class="text-input" type="text" id="text" name="text" placeholder="Was gibts?" >-->
+            <textarea class="text-input" placeholder="@you: Was gibts?"></textarea>
+            <div style="padding-left: 3vw;">
+                <button class="media-button"><span class="material-icons">add_a_photo</span></button>
+                <button class="media-button"><span class="material-icons">add_location</span></button>
+                <button class="media-button"><span class="material-icons">diamond</span></button>
+            </div>
         </div>
         <div class="navigation">
-            <button class="nav-button" onclick="location.href='index.html'"><span class="material-icons">home</span></button>
-            <button class="nav-button" onclick="location.href='write.html'" style="background-color: rgb(35, 44, 53);"><span class="material-icons">edit</span></button>
+            <button class="nav-button" onclick="location.href='index'"><span class="material-icons">home</span></button>
+            <button class="nav-button" onclick="location.href='write'" style="background-color: rgb(35, 44, 53);"><span class="material-icons">edit</span></button>
             <button class="nav-button"><span class="material-icons">calendar_month</span></button>
             <button class="nav-button"><span class="material-icons">dashboard</span></button>
             
