@@ -5,10 +5,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 100;
 }
 
 .modal.hidden {
+  display: none;
+  pointer-events: none;
+}
+
+button.hidden {
   display: none;
   pointer-events: none;
 }

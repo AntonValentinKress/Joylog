@@ -50,7 +50,7 @@ div.write-content {
     padding: 0px;
     margin: 0px;
     display: grid;
-    grid-template-rows: 1fr 20fr 2fr;
+    grid-template-rows: 1fr 19fr 2fr 1fr;
     width: 100vw;
     overflow: scroll;
 }
@@ -149,4 +149,22 @@ button.media-button {
 
 button.media-button:hover {
     background-color: rgba(var(--akzent), 0.5);
+}
+
+button.blue {
+    background-color: rgba(var(--kontrast), 1);
+    border-radius: 100%;
+    font-size: xx-large;
+}
+
+button.blue:hover {
+    background-color: rgba(var(--kontrast), 0.5);
+
+}
+
+img.preview-img {
+    max-width: 33vw;
+    max-height: 5vh;
+    height: auto;
+    width: auto;
 }
