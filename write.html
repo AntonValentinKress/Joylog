@@ -40,7 +40,7 @@
                 <input class="time-input" type="time" id="time" name="time" onload="getTime()">
             </div>
             <!--<input class="text-input" type="text" id="text" name="text" placeholder="Was gibts?" >-->
-            <textarea class="text-input" placeholder="@you: Was gibts?"></textarea>
+            <textarea class="text-input" id="text" placeholder="@you: Was gibts?"></textarea>
             <div style="display: flex; justify-content: space-between; padding-left: 3vw;">
                 <div style="display: flex; gap: 10px;">
                     <button class="media-button" id="btnImage"><span class="material-icons">add_a_photo</span></button>
@@ -92,6 +92,7 @@
         <div style="text-align: right;">
           <button onclick="closeModal(modalScore)">Abbrechen</button>
           <button onclick="saveScore()">Speichern</button>
+          <button onclick="deleteScore()">Löschen</button>
         </div>
       </div>
     </div>
@@ -100,12 +101,42 @@
     <script src="assets/script.js"></script>   
     <script>
         // Globale Variablen
-        let selectedDate = "";
-        let selectedTime = "";
-        let selectedText = "";
+        let selectedDate = null;
+        let selectedTime = null;
+        let selectedText = null;
         let selectedImages = [];
         let selectedLatLng = null;
-        let selectedScore = 50;
+        let selectedScore = null;
+
+        //Zwischenspeicher
+        let tempLatLng = null; 
+        let tempScore = null;
+
+        // Adresse Buttons
+        const btnImage = document.getElementById("btnImage");
+        const btnLocation = document.getElementById("btnLocation");
+        const btnScore = document.getElementById("btnScore");
+        const btnSend = document.getElementById("btnSend");
+
+        // Adresse Inputs
+        const inputDate = document.getElementById("date");
+        const inputTime = document.getElementById("time");
+        const inputText = document.getElementById("text");
+
+        function getDate() {
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('date').value = today;
+          selectedDate = today
+        }
+
+        function getTime() {
+          const now = new Date();
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          const currentTime = `${hours}:${minutes}`;
+          document.getElementById('time').value = currentTime;
+          selectedTime = currentTime
+        }
 
         // EventListener
         document.addEventListener("DOMContentLoaded", function () {
@@ -119,12 +150,6 @@
             });
             document.getElementById("btnScore").addEventListener("click", () => openModal(modalScore));
         });
-
-        // Adresse Buttons
-        const btnImage = document.getElementById("btnImage");
-        const btnLocation = document.getElementById("btnLocation");
-        const btnScore = document.getElementById("btnScore");
-        const btnSend = document.getElementById("btnSend");
 
         // Modalfunktionen
         const openModal = (el) => {
@@ -168,16 +193,19 @@
         // Leaflet Map
         let map;
         let marker;
+
         function initMap() {
           if (!map) {
             map = L.map('map').setView([51.1657, 10.4515], 5); //Mitte Deutschland
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
               attribution: '© OpenStreetMap-Mitwirkende'
             }).addTo(map);
+
+            //Klick-Event Check
             map.on('click', (e) => {
-              selectedLatLng = e.latlng;
+              tempLatLng = e.latlng;
               if (marker) marker.remove();
-              marker = L.marker(selectedLatLng).addTo(map);
+              marker = L.marker(tempLatLng).addTo(map);
             });
 
             // Karte auf aktuelle Position des Clients zentrieren
@@ -185,18 +213,109 @@
               navigator.geolocation.getCurrentPosition((pos) => {
                 const latlng = [pos.coords.latitude, pos.coords.longitude];
                 map.setView(latlng, 13);
-                marker = L.marker(latlng).addTo(map);
               });
             }
           } else {
             map.invalidateSize();
           }
         }
+  
         function saveLocation() {
-          console.log("Position gespeichert:", selectedLatLng);
+          if (tempLatLng) {
+            selectedLatLng = tempLatLng;
+            console.log("Standort gespeichert:", selectedLatLng);
+          } else {
+            console.log("Kein Standort ausgewählt.");
+          }
           closeModal(modalLocation);
-          updateActiveButtons();
         }
+
+        function deleteLocation() {
+          if (selectedLatLng) {
+            if (marker) marker.remove();
+            console.log("Standort " + selectedLatLng + " wird gelöscht!");
+            selectedLatLng = null;
+            closeModal(modalLocation);
+          } else {
+            console.log("Kein Standort wurde gespeichert!");
+            closeModal(modalLocation);
+          }
+        }
+
+        // Score
+        const slider = document.getElementById("scoreSlider");
+        const label = document.getElementById("scoreLabel");
+        slider.addEventListener("input", function () {
+          const v = +slider.value;
+          tempScore = v;
+          let txt = 'Neutral (' + v + ')';
+          if (v < 20) txt = 'Sehr unglücklich (' + v + ')';
+          else if (v < 40) txt = 'Unglücklich (' + v + ')';
+          else if (v < 60) txt = 'Neutral (' + v + ')';
+          else if (v < 80) txt = 'Glücklich (' + v + ')';
+          else txt = 'Sehr glücklich (' + v + ')';
+          label.textContent = txt;
+        });
+        function saveScore() {
+          selectedScore = tempScore;
+          console.log("Score gespeichert:", selectedScore);
+          closeModal(modalScore);
+        }
+        function deleteScore() {
+          if (selectedScore) {
+            console.log("Score wird gelöscht!");
+            selectedScore = null;
+            closeModal(modalScore);
+          } else {
+            console.log("Kein Score verfügbar!")
+            closeModal(modalScore);
+          }
+        }
+
+        async function convertImagesToBase64(files) {
+          const promises = Array.from(files).map(file => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result); // base64-URL
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          });
+          return Promise.all(promises);
+        }
+
+        //Absenden
+        btnSend.addEventListener("click", async function() {
+          console.log("Absenden der Daten!")
+
+          const base64Images = await convertImagesToBase64(selectedImages);
+
+          const data = {
+            date: inputDate.value,
+            time: inputTime.value,
+            text: inputText.value,
+            images: base64Images,
+            latlng: selectedLatLng,
+            score: selectedScore
+          };
+
+          console.log("Data: " + data)
+
+          fetch("http://localhost:8000/api/data", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log("Serverantwort:", response);
+        })
+        .catch(error => {
+            console.error("Fehler beim Senden:", error);
+        });
+      });
     </script>
     
 </body>

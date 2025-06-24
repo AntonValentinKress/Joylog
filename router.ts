@@ -1,4 +1,21 @@
 import { Application, Router, send } from 'https://deno.land/x/oak/mod.ts';
+import { serve } from "https://deno.land/std/http/server.ts";
+import { ensureDir } from "https://deno.land/std@0.224.0/fs/mod.ts";
+
+// Hilfsfunktion zum Base64-Dekodieren
+function decodeBase64Image(base64String: string): Uint8Array {
+  const matches = base64String.match(/^data:.+\/(.+);base64,(.*)$/);
+  if (!matches || matches.length !== 3) {
+    throw new Error("Ungültiges Base64-Bildformat");
+  }
+  return Uint8Array.from(atob(matches[2]), c => c.charCodeAt(0));
+}
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
 const app = new Application();
 const router = new Router();
@@ -70,6 +87,77 @@ router.post("/entry", async (ctx) => {
 
   ctx.response.body = { status: "success", output: decoded };
 });
+
+
+serve(async (req) => {
+  const { pathname } = new URL(req.url);
+
+  // Preflight-Anfrage für CORS
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: CORS_HEADERS,
+    });
+  }
+
+  if (req.method === "POST" && pathname === "/api/data") {
+    try {
+      const body = await req.json();
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const basePath = `entries`;
+      const entryPath = `${basePath}/${timestamp}`;
+      await ensureDir(basePath);
+
+      const imagePaths: string[] = [];
+
+      if (Array.isArray(body.images)) {
+        for (let i = 0; i < body.images.length; i++) {
+          try {
+            const base64 = body.images[i];
+            const binaryData = decodeBase64Image(base64);
+            const imagePath = `${entryPath}_img${i}.png`;
+            await Deno.writeFile(imagePath, binaryData);
+            imagePaths.push(imagePath);
+          } catch (e) {
+            console.warn("Fehler beim Bildspeichern:", e);
+          }
+        }
+      }
+
+      const dataToSave = {
+        date: body.date,
+        time: body.time,
+        text: body.text,
+        latlng: body.latlng,
+        score: body.score,
+        images: imagePaths,
+      };
+
+      const jsonPath = `${entryPath}.json`;
+      await Deno.writeTextFile(jsonPath, JSON.stringify(dataToSave, null, 2));
+
+      return new Response(
+        JSON.stringify({ status: "OK", saved: jsonPath, images: imagePaths }),
+        {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    } catch (err) {
+      console.error("Fehler beim Verarbeiten:", err);
+      return new Response("Fehler beim Verarbeiten", {
+        status: 500,
+        headers: CORS_HEADERS,
+      });
+    }
+  }
+
+  return new Response("Not Found", { status: 404, headers: CORS_HEADERS });
+}, { port: 8000 });
 
 
 app.use(router.routes());
