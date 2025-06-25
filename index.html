@@ -15,6 +15,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="manifest" href="favicon/site.webmanifest">
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+
     <link rel="Stylesheet" href="assets/stylesheet.css"/>
     <link rel="stylesheet" href="assets/sidebar.css">
 </head>
@@ -27,6 +34,14 @@
         <a href="#">Nutzer</a>
         <a href="#">Kontakt</a>
     </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeExpanded()">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
 
     <div class="header-content-navigation">
         <div class="header">
