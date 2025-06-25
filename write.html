@@ -101,16 +101,16 @@
     <script src="assets/script.js"></script>   
     <script>
         // Globale Variablen
-        let selectedDate = null;
-        let selectedTime = null;
-        let selectedText = null;
+        let selectedDate = "";
+        let selectedTime = "";
+        let selectedText = "";
         let selectedImages = [];
-        let selectedLatLng = null;
-        let selectedScore = null;
+        let selectedLatLng = "";
+        let selectedScore = "";
 
         //Zwischenspeicher
-        let tempLatLng = null; 
-        let tempScore = null;
+        let tempLatLng = ""; 
+        let tempScore = "";
 
         // Adresse Buttons
         const btnImage = document.getElementById("btnImage");
@@ -234,7 +234,7 @@
           if (selectedLatLng) {
             if (marker) marker.remove();
             console.log("Standort " + selectedLatLng + " wird gelöscht!");
-            selectedLatLng = null;
+            selectedLatLng = "";
             closeModal(modalLocation);
           } else {
             console.log("Kein Standort wurde gespeichert!");
@@ -264,7 +264,7 @@
         function deleteScore() {
           if (selectedScore) {
             console.log("Score wird gelöscht!");
-            selectedScore = null;
+            selectedScore = "";
             closeModal(modalScore);
           } else {
             console.log("Kein Score verfügbar!")
@@ -294,14 +294,16 @@
             date: inputDate.value,
             time: inputTime.value,
             text: inputText.value,
-            images: base64Images,
+            images: base64Images ?? [],
             latlng: selectedLatLng,
             score: selectedScore
           };
 
-          console.log("Data: " + data)
+          console.log("Data: " + JSON.stringify(data))
 
-          fetch("http://localhost:8000/api/data", {
+          const url = `${window.location.origin}/data`;
+
+          fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

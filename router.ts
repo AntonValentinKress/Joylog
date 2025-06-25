@@ -1,6 +1,6 @@
-import { Application, Router, send } from 'https://deno.land/x/oak/mod.ts';
-import { serve } from "https://deno.land/std/http/server.ts";
-import { ensureDir } from "https://deno.land/std@0.224.0/fs/mod.ts";
+import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
+import { Request } from "jsr:@oak/oak";
+import { ensureDir } from "https://deno.land/std/fs/mod.ts";
 
 // Hilfsfunktion zum Base64-Dekodieren
 function decodeBase64Image(base64String: string): Uint8Array {
@@ -20,8 +20,7 @@ const CORS_HEADERS = {
 const app = new Application();
 const router = new Router();
 
-//IP und Port
-const routerIp = '192.168.178.76'; 
+// Port 
 const routerPort = 8088;
 
 router.get('/', async (ctx) => {
@@ -68,99 +67,34 @@ router.get('/favicon/:filename', async (ctx) => {
     }
 });
 
-router.post("/entry", async (ctx) => {
-  const body = await ctx.request.body({ type: "json" }).value;
 
-  const process = Deno.run({
-    cmd: ["python3", "insert_data.py"],
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "piped",
-  });
+router.post('/data', async (ctx) => {
+  try {
+    // Lese den Body als JSON aus
+    const body = ctx.request.body.json();
+    const data = await body.value;
 
-  // Übergib JSON an Python-Skript via stdin
-  await process.stdin.write(new TextEncoder().encode(JSON.stringify(body)));
-  process.stdin.close();
+    console.log("Data:", data); // Hier solltest du dein JSON-Objekt sehen
 
-  const output = await process.output();
-  const decoded = new TextDecoder().decode(output);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const basePath = `entries`;
+    const entryPath = `${basePath}/${timestamp}`;
+    await ensureDir(basePath);
 
-  ctx.response.body = { status: "success", output: decoded };
+    const jsonPath = `${entryPath}.json`;
+    await Deno.writeTextFile(jsonPath, JSON.stringify(data, null, 2));
+
+    ctx.response.status = 200;
+    ctx.response.body = { status: "OK", saved: jsonPath };
+  } catch (err) {
+    console.error("Fehler beim Verarbeiten der POST-Daten:", err);
+    ctx.response.status = 500;
+    ctx.response.body = { error: "Fehler beim Verarbeiten" };
+  }
 });
 
-
-serve(async (req) => {
-  const { pathname } = new URL(req.url);
-
-  // Preflight-Anfrage für CORS
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: CORS_HEADERS,
-    });
-  }
-
-  if (req.method === "POST" && pathname === "/api/data") {
-    try {
-      const body = await req.json();
-
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const basePath = `entries`;
-      const entryPath = `${basePath}/${timestamp}`;
-      await ensureDir(basePath);
-
-      const imagePaths: string[] = [];
-
-      if (Array.isArray(body.images)) {
-        for (let i = 0; i < body.images.length; i++) {
-          try {
-            const base64 = body.images[i];
-            const binaryData = decodeBase64Image(base64);
-            const imagePath = `${entryPath}_img${i}.png`;
-            await Deno.writeFile(imagePath, binaryData);
-            imagePaths.push(imagePath);
-          } catch (e) {
-            console.warn("Fehler beim Bildspeichern:", e);
-          }
-        }
-      }
-
-      const dataToSave = {
-        date: body.date,
-        time: body.time,
-        text: body.text,
-        latlng: body.latlng,
-        score: body.score,
-        images: imagePaths,
-      };
-
-      const jsonPath = `${entryPath}.json`;
-      await Deno.writeTextFile(jsonPath, JSON.stringify(dataToSave, null, 2));
-
-      return new Response(
-        JSON.stringify({ status: "OK", saved: jsonPath, images: imagePaths }),
-        {
-          status: 200,
-          headers: {
-            ...CORS_HEADERS,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-    } catch (err) {
-      console.error("Fehler beim Verarbeiten:", err);
-      return new Response("Fehler beim Verarbeiten", {
-        status: 500,
-        headers: CORS_HEADERS,
-      });
-    }
-  }
-
-  return new Response("Not Found", { status: 404, headers: CORS_HEADERS });
-}, { port: 8000 });
-
-
 app.use(router.routes());
+app.use(router.allowedMethods());
 
-console.log(`Now listening on ${routerIp}:${routerPort}/index.`);
-await app.listen(`${routerIp}:${routerPort}`);
+console.log(`Listening on http://localhost:8088`);
+await app.listen({ port: 8088 });
