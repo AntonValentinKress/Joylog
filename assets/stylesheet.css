@@ -168,3 +168,26 @@ img.preview-img {
     height: auto;
     width: auto;
 }
+
+.cards-wrapper {
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.card {
+    background-color: rgba(var(--hintergrund),1);
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.card-body {
+    white-space: pre-wrap;
+}
