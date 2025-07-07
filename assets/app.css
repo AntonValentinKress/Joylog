@@ -1,0 +1,36 @@
+/*Google Icons - Lokal*/
+body {
+    margin: 0px;
+    padding: 0px;
+    background-color: rgba(22, 31, 40, 1);
+    color: white;
+}
+
+.main-wrapper {
+    display: grid;
+    grid-template-rows: 1fr 10fr 1fr;
+    height: 100vh;
+    width: 100vw;
+}
+
+/*Google Icons - Lokal*/
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('MaterialIcons-Regular.ttf') format('truetype');
+}
+.material-icons {
+    font-family: 'Material Icons';
+    font-size: 100%;
+    display: inline-block;
+    text-rendering: optimizeLegibility;
+    text-align: center;
+    color: white;
+}
+
+#content {
+    position: relative;
+    overflow-y: scroll;
+    height: 100%;             
+}

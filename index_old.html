@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Joy.log 📖</title>
+
+    <meta name="description" content="Joy.log dient der dokumentation von glücklichen Lebensmomenten, 
+        da wir leider dazu tendieren nur die schlechten Erfahrungen in Erinnerung zu behalten"/>
+    <meta name="author" content="Anton Valentin Kreß"/>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+
+    <link rel="Stylesheet" href="assets/stylesheet.css"/>
+    <link rel="stylesheet" href="assets/sidebar.css">
+</head>
+
+<body>
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="#">About</a>
+        <a href="#">Dienste</a>
+        <a href="#">Nutzer</a>
+        <a href="#">Kontakt</a>
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeExpanded()">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+
+    <div class="header-content-navigation">
+        <div class="header">
+            <button class="nav-button" onclick="openNav()"><span class="material-icons">menu</span></button>
+            <div><span class="material-icons">auto_stories</span></div>
+            
+
+        </div>
+        <div class="content">
+            <div class="cards-wrapper">
+   
+            </div>
+        </div>
+        <div class="navigation">
+            <button class="nav-button" onclick="location.href='index'"style="background-color: rgb(35, 44, 53);"><span class="material-icons">home</span></button>
+            <button class="nav-button" onclick="location.href='write'"><span class="material-icons">edit</span></button>
+            <button class="nav-button"><span class="material-icons">calendar_month</span></button>
+            <button class="nav-button"><span class="material-icons">dashboard</span></button>
+            
+        </div>
+    </div>
+
+    <script src="assets/script.js"></script>  
+    
+    <script>
+        /* Set the width of the sidebar to 250px and the left margin of the page content to 250px */
+        function openNav() {
+        document.getElementById("mySidebar").style.width = "250px";
+        }
+
+        /* Set the width of the sidebar to 0 and the left margin of the page content to 0 */
+        function closeNav() {
+        document.getElementById("mySidebar").style.width = "0";
+        } 
+    </script>
+    
+</body>
+</html>
