@@ -140,7 +140,7 @@ class EntryForm extends HTMLElement {
             };
 
             try {
-                const response = await fetch('http://localhost:8000/submit', {
+                const response = await fetch(`${globalThis.location.origin.replace(/:\d+$/, ':8000')}/submit`,  {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
