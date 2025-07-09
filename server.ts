@@ -93,5 +93,18 @@ router.get('/read', async (ctx) => {
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-console.log("Server läuft auf http://localhost:8000");
-await app.listen({ port: 8000 });
+const getLocalIP = async (): Promise<string> => {
+  const networkInterfaces = Deno.networkInterfaces();
+  for (const iface of networkInterfaces) {
+    // Nur IPv4 & nicht loopback
+    if (iface.family === "IPv4" && !iface.address.startsWith("127.")) {
+      return iface.address;
+    }
+  }
+  return "Unbekannt";
+};
+
+const localIP = await getLocalIP();
+console.log(`Server läuft! ➜ http://${localIP}:8000`);
+
+await app.listen({ port: 8000 , hostname: "0.0.0.0" });
