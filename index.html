@@ -66,6 +66,40 @@
         </div>
     </template>
 
+    <template id="joylog-feed">
+        <!-- Feed Template -->
+        <style>
+            #feed-container {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+        </style>
+
+        <div id="feed-container"></div>
+    </template>
+
+    <template id="joylog-entry">
+        <style>
+            .entry {
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                padding: 1rem;
+                background: #fafafa;
+            }
+            img {
+                max-width: 100%;
+                border-radius: 6px;
+            }
+        </style>
+        <div class="entry">
+            <strong class="date"></strong><br/>
+            <span class="score"></span><br/>
+            <p class="text"></p>
+            <img class="file" />
+        </div>
+    </template>
+
     <template id="joylog-createentry">
         <!-- Entry Form Template -->
 
@@ -159,7 +193,7 @@
             .heart-icon {
                 font-size: 48px; 
                 user-select: none;
-                color: red;     /* Herzfarbe */
+                color: rgb(167, 14, 14);     /* Herzfarbe */
                 width: 100%;
             }
 

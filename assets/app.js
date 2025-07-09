@@ -1,5 +1,3 @@
-import { GlobalStore } from './dataStore.js'; // <– ganz oben importieren
-
 class Header extends HTMLElement {
     // Class public field
     // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields
@@ -41,7 +39,7 @@ class Footer extends HTMLElement {
         this.shadowRoot.querySelectorAll('button').forEach((btn, idx) => {
             btn.addEventListener('click', () => {
                 switch (idx) {
-                    case 0: loadView('joylog-readentrys'); break;
+                    case 0: loadView('joylog-feed'); break;
                     case 1: loadView('joylog-createentry'); break;
                     case 2: loadView('joylog-calendar'); break;
                     case 3: loadView('joylog-dashboard'); break;
@@ -61,8 +59,6 @@ class Footer extends HTMLElement {
 }
 
 class EntryForm extends HTMLElement {
-    // Class public field
-    // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields
     constructor() {
         super();
         const templateContent = document
@@ -77,6 +73,18 @@ class EntryForm extends HTMLElement {
     connectedCallback() {
         console.log('Form wurde geöffnet!');
 
+        // Inputs auf der Seite
+        const dateInput = this.shadowRoot.querySelector('#date');
+        const fileInput = this.shadowRoot.querySelector('#file');
+        //const textInput = this.shadowRoot.querySelector('#textarea');
+        //const scoreInput = this.shadowRoot.querySelector('#score');
+
+        const preview = this.shadowRoot.querySelector('#preview');
+        const form = this.shadowRoot.querySelector('form');
+
+ 
+
+        // Wert des Sliders anzeigen (im Herz)
         const value = this.shadowRoot.querySelector("#value");
         const input = this.shadowRoot.querySelector("#score");
         value.textContent = input.value;
@@ -84,16 +92,13 @@ class EntryForm extends HTMLElement {
             value.textContent = event.target.value;
         });
 
-        //Datum automatisch auf "heute" setzen
-        const dateInput = this.shadowRoot.querySelector('input[type="date"]');
-        if (dateInput && !dateInput.value) {
-            dateInput.valueAsDate = new Date(); // setzt das Datum nur, wenn noch leer
+        //Datum automatisch auf "heute" setzen wenn noch leer
+        function updateDate() {
+            if (dateInput && !dateInput.value) {
+                dateInput.valueAsDate = new Date(); // setzt das Datum nur, wenn noch leer
+            }
         }
-
-        // Referenzen
-        const fileInput = this.shadowRoot.querySelector('#file');
-        const preview = this.shadowRoot.querySelector('#preview');
-        const form = this.shadowRoot.querySelector('form');
+        updateDate()
 
         // Bildvorschau anzeigen
         fileInput.addEventListener('change', () => {
@@ -113,98 +118,144 @@ class EntryForm extends HTMLElement {
 
         // Bildvorschau beim Reset entfernen
         form.addEventListener('reset', () => {
-            // Timeout notwendig, weil der Reset sofort zurücksetzt und wir danach verstecken müssen
             setTimeout(() => {
                 preview.src = '';
                 preview.style.display = 'none';
                 fileInput.value = ''; // Optional, falls man erneut das gleiche Bild wählen möchte
+                input.dispatchEvent(new Event("input")); // Input event auslösen, damit aktualisierungen laufen
+                updateDate()
             }, 0);
         });
 
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Standard-Submit verhindern
+        form.addEventListener('submit',  (e) => {
+            e.preventDefault(); // Standard-Submit verhindern  
 
+            // Logik des Absendens von Daten
             const date = this.shadowRoot.querySelector('#date').value;
             const text = this.shadowRoot.querySelector('#textarea').value;
+            const score = this.shadowRoot.querySelector('#score').value;
             const fileInput = this.shadowRoot.querySelector('#file');
             const file = fileInput.files[0];
 
-            // Datei als Base64 lesen (optional, nur wenn Bild enthalten)
-            let fileData = null;
-            if (file) {
-                fileData = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file); // Ergebnis: "data:image/jpeg;base64,..."
-                });
-            }
+            const storeData = async () => {
+                let fileData = null;
+                if (file) {
+                    fileData = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                }
 
-            // JSON-Payload
-            const payload = {
-                date,
-                text,
-                file: fileData, // kann auch null sein
-            };
+                const payload = {
+                    date,
+                    text,
+                    file: fileData, // ← Jetzt ist es ein String (Base64), kein Promise
+                    score,
+                };
 
-            try {
-                const response = await fetch(`${globalThis.location.origin.replace(/:\d+$/, ':8000')}/submit`,  {
+                
+                await fetch('/save', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 });
 
-                const result = await response.json();
-                console.log('Antwort vom Server:', result);
-            } catch (err) {
-                console.error('Fehler beim Senden:', err);
-            }
+                console.log('Daten gespeichert!')
+            };
+
+            storeData().catch(console.error);
         });
-
-
     }
 
     disconnectedCallback() {
         console.log('Form wird geschlossen!');
-
-        const date = this.shadowRoot.querySelector('#date').value;
-        const text = this.shadowRoot.querySelector('#textarea').value;
-        const fileInput = this.shadowRoot.querySelector('#file');
-        const file = fileInput.files[0];
-
-        let fileData = null;
-        if (file) {
-            fileData = new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        const payload = {
-            date,
-            text,
-            file: fileData,
-        };
-
-        // 🟢 Global speichern
-        GlobalStore.set('entryData', payload);
-
-        // ⬇️ Optional: Logging
-        console.log('Daten im GlobalStore:', GlobalStore.get('entryData'));
-
     }
 
+}
+
+class FeedForm extends HTMLElement {
+    constructor() {
+        super();
+        const template = document
+            .getElementById('joylog-feed')
+            .content
+            .cloneNode(true);
+
+        this.attachShadow({ mode: 'open' })
+            .appendChild(template);
+
+        this.offset = 0;
+        this.limit = 10;
+        this.loading = false;
+        this.container = null;
+    }
+
+    connectedCallback() {
+        this.container = this.shadowRoot.querySelector('#feed-container');
+        console.log('Feed wurde geöffnet!');
+        this.loadEntries();
+    }
+
+    async loadEntries() {
+        if (this.loading) return;
+        this.loading = true;
+
+        try {
+            const res = await fetch(`/api/entries?offset=${this.offset}&limit=${this.limit}`);
+            const { entries } = await res.json();
+
+            entries.forEach(entry => {
+                const el = document.createElement('joylog-entry');
+                el.data = entry;
+                this.container.appendChild(el);
+            });
+
+            this.offset += this.limit;
+        } catch (err) {
+            console.error("Fehler beim Laden:", err);
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    disconnectedCallback() {
+        console.log('Feed wird geschlossen!');
+    }
+}
+
+class JoylogEntry extends HTMLElement {
+    constructor() {
+        super();
+        const template = document
+            .getElementById('joylog-entry')
+            .content.cloneNode(true);
+        this.attachShadow({ mode: 'open' }).appendChild(template);
+    }
+
+    set data(entry) {
+        this.shadowRoot.querySelector('.date').textContent = entry.date;
+        this.shadowRoot.querySelector('.score').textContent = `Score: ${entry.score}`;
+        this.shadowRoot.querySelector('.text').textContent = entry.text;
+
+        const img = this.shadowRoot.querySelector('.file');
+        if (entry.file) {
+            img.src = entry.file;
+            img.style.display = 'block';
+        } else {
+            img.style.display = 'none';
+        }
+    }
 }
 
 //Define Custom Elements
 customElements.define('joylog-header', Header);
 customElements.define('joylog-footer', Footer);
-customElements.define('joylog-createentry', EntryForm)
+customElements.define('joylog-createentry', EntryForm);
+customElements.define('joylog-feed', FeedForm);
+customElements.define('joylog-entry', JoylogEntry);
 
 function loadView(tagName) {
     const container = document.getElementById('content');
@@ -219,7 +270,7 @@ function loadView(tagName) {
     container.appendChild(newElement);
 }
 
-
+// Initiale Ansicht beim öffnen der Seite
 globalThis.addEventListener('DOMContentLoaded', () => {
     loadView('joylog-readentrys'); // oder was du möchtest
 });
