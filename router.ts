@@ -1,4 +1,4 @@
-import { Application, Router } from "https://deno.land/x/oak@v17.1.4/mod.ts";
+import { Application, Router, send } from "https://deno.land/x/oak@v17.1.4/mod.ts";
 
 const app = new Application();
 const router = new Router();
@@ -7,9 +7,42 @@ router.get('/', async (ctx) => {
     await ctx.response.redirect('/index');
 });
 
+router.get("/index", async (ctx) => {
+  await send(ctx, "index.html", {
+    root: ".",
+  });
+});
+
+router.get('/assets/:filename', async (ctx) => {
+    const filename = ctx.params.filename;
+    try {
+        await send(ctx, filename, {
+            root: './assets',
+        });
+    } catch (err) {
+        console.error("Fehler:", err);
+        ctx.response.status = 404;
+        ctx.response.body = "Assets bereitgestellt.";
+    }
+});
+
+router.get('/favicon/:filename', async (ctx) => {
+    const filename = ctx.params.filename;
+    try {
+        await send(ctx, filename, {
+            root: './favicon',
+        });
+    } catch (err) {
+        console.error("Fehler:", err);
+        ctx.response.status = 404;
+        ctx.response.body = "Favicon bereitgestellt.";
+    }
+});
+
 router.post("/submit", async (ctx) => {
   try {
-    const payload = await ctx.request.body({ type: "json" }).value;
+    const payload = await ctx.request.body.json();
+
 
     // Übergabe an Python-Skript per stdin (JSON wird gepiped)
     const command = new Deno.Command("python3", {

@@ -1,3 +1,5 @@
+import { GlobalStore } from './dataStore.js'; // <– ganz oben importieren
+
 class Header extends HTMLElement {
     // Class public field
     // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields
@@ -74,6 +76,13 @@ class EntryForm extends HTMLElement {
 
     connectedCallback() {
         console.log('Form wurde geöffnet!');
+
+        const value = this.shadowRoot.querySelector("#value");
+        const input = this.shadowRoot.querySelector("#score");
+        value.textContent = input.value;
+        input.addEventListener("input", (event) => {
+            value.textContent = event.target.value;
+        });
 
         //Datum automatisch auf "heute" setzen
         const dateInput = this.shadowRoot.querySelector('input[type="date"]');
@@ -160,6 +169,34 @@ class EntryForm extends HTMLElement {
 
     disconnectedCallback() {
         console.log('Form wird geschlossen!');
+
+        const date = this.shadowRoot.querySelector('#date').value;
+        const text = this.shadowRoot.querySelector('#textarea').value;
+        const fileInput = this.shadowRoot.querySelector('#file');
+        const file = fileInput.files[0];
+
+        let fileData = null;
+        if (file) {
+            fileData = new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const payload = {
+            date,
+            text,
+            file: fileData,
+        };
+
+        // 🟢 Global speichern
+        GlobalStore.set('entryData', payload);
+
+        // ⬇️ Optional: Logging
+        console.log('Daten im GlobalStore:', GlobalStore.get('entryData'));
+
     }
 
 }
