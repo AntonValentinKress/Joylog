@@ -4,7 +4,7 @@ import sqlite3
 import os
 
 def main(filepath):
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding="utf-8") as f:
         data = json.load(f)
 
     conn = sqlite3.connect('entries/data.db')

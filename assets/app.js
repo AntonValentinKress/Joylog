@@ -159,7 +159,7 @@ class EntryForm extends HTMLElement {
                 
                 await fetch('/save', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
                     body: JSON.stringify(payload),
                 });
 
@@ -192,7 +192,7 @@ class FeedForm extends HTMLElement {
         console.log('Feed wurde geöffnet!');
         this.container = this.shadowRoot.querySelector('#feed-container');
         this.offset = 0;
-        this.limit = 3;
+        this.limit = 5;
         this.loading = false;
 
         this.loadEntries(); // initiale Einträge laden
@@ -211,7 +211,10 @@ class FeedForm extends HTMLElement {
         this.loading = true;
 
         try {
-            const res = await fetch(`/read?offset=${this.offset}&limit=${this.limit}`);
+            const res = await fetch(`/read?offset=${this.offset}&limit=${this.limit}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+            });
             const { entries } = await res.json();
 
             if (!entries || entries.length === 0) {
@@ -261,9 +264,10 @@ class JoylogEntry extends HTMLElement {
     }
 
     set data(entry) {
+        this.shadowRoot.querySelector('.id').textContent = `#-${entry.id.toString().padStart(4, '0')}`;
         this.shadowRoot.querySelector('.date').textContent = entry.date;
-        this.shadowRoot.querySelector('.score').textContent = `Score: ${entry.score}`;
-        this.shadowRoot.querySelector('.text').textContent = entry.text;
+        this.shadowRoot.querySelector('.score').textContent = entry.score;
+        this.shadowRoot.querySelector('.text').innerHTML = entry.text.replace(/\n/g, '<br>');;
 
         const img = this.shadowRoot.querySelector('.file');
         if (entry.file) {
@@ -271,6 +275,15 @@ class JoylogEntry extends HTMLElement {
             img.style.display = 'block';
         } else {
             img.style.display = 'none';
+        }
+    }
+
+    connectedCallback() {
+        const textElement = this.shadowRoot.querySelector('.text');
+        if (textElement) {
+            textElement.addEventListener('click', () => {
+                textElement.classList.toggle('expanded');
+            });
         }
     }
 }
