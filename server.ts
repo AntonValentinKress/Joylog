@@ -28,6 +28,13 @@ router.get('/assets/:filename', async (ctx) => {
     }
 });
 
+router.get('/favicon.ico', async (ctx) => {
+  await send(ctx, 'favicon.ico', {
+    root: './favicon',
+  });
+});
+
+
 router.post('/save', async (ctx) => {
     const data = await ctx.request.body.json();
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -57,7 +64,7 @@ router.post('/save', async (ctx) => {
     }
 });
 
-router.get('/api/entries', async (ctx) => {
+router.get('/read', async (ctx) => {
     const url = new URL(ctx.request.url);
     const offset = url.searchParams.get("offset") ?? "0";
     const limit = url.searchParams.get("limit") ?? "10";

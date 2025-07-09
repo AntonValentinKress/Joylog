@@ -164,6 +164,7 @@ class EntryForm extends HTMLElement {
                 });
 
                 console.log('Daten gespeichert!')
+                loadView('joylog-feed');
             };
 
             storeData().catch(console.error);
@@ -179,24 +180,30 @@ class EntryForm extends HTMLElement {
 class FeedForm extends HTMLElement {
     constructor() {
         super();
-        const template = document
+        const templateContent = document
             .getElementById('joylog-feed')
             .content
             .cloneNode(true);
 
-        this.attachShadow({ mode: 'open' })
-            .appendChild(template);
-
-        this.offset = 0;
-        this.limit = 10;
-        this.loading = false;
-        this.container = null;
+        this.attachShadow({ mode: 'open' }).appendChild(templateContent);
     }
 
     connectedCallback() {
-        this.container = this.shadowRoot.querySelector('#feed-container');
         console.log('Feed wurde geöffnet!');
-        this.loadEntries();
+        this.container = this.shadowRoot.querySelector('#feed-container');
+        this.offset = 0;
+        this.limit = 3;
+        this.loading = false;
+
+        this.loadEntries(); // initiale Einträge laden
+
+        // Lazy-Loading Scroll-Handler
+        this.container.addEventListener('scroll', () => this.handleScroll());
+    }
+
+    disconnectedCallback() {
+        console.log('Feed wird geschlossen!');
+        this.container.removeEventListener('scroll', this.handleScroll);
     }
 
     async loadEntries() {
@@ -204,13 +211,23 @@ class FeedForm extends HTMLElement {
         this.loading = true;
 
         try {
-            const res = await fetch(`/api/entries?offset=${this.offset}&limit=${this.limit}`);
+            const res = await fetch(`/read?offset=${this.offset}&limit=${this.limit}`);
             const { entries } = await res.json();
 
-            entries.forEach(entry => {
+            if (!entries || entries.length === 0) {
+                console.log("Keine weiteren Einträge.");
+                return;
+            }
+
+            entries.forEach((entry, index) => {
                 const el = document.createElement('joylog-entry');
                 el.data = entry;
                 this.container.appendChild(el);
+
+                // Verzögere das Setzen der Klasse 'visible' für den Fade-Effekt
+                setTimeout(() => {
+                    el.classList.add('visible');
+                }, index * 200); // 200ms Abstand pro Eintrag (kann angepasst werden)
             });
 
             this.offset += this.limit;
@@ -221,8 +238,16 @@ class FeedForm extends HTMLElement {
         }
     }
 
-    disconnectedCallback() {
-        console.log('Feed wird geschlossen!');
+    handleScroll() {
+        const threshold = 200; // Puffer in Pixeln
+        const container = this.container;
+
+        const scrollBottom = container.scrollTop + container.clientHeight;
+        const scrollHeight = container.scrollHeight;
+
+        if (scrollHeight - scrollBottom < threshold) {
+            this.loadEntries();
+        }
     }
 }
 
@@ -272,5 +297,5 @@ function loadView(tagName) {
 
 // Initiale Ansicht beim öffnen der Seite
 globalThis.addEventListener('DOMContentLoaded', () => {
-    loadView('joylog-readentrys'); // oder was du möchtest
+    loadView('joylog-feed'); // oder was du möchtest
 });

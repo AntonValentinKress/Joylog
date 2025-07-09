@@ -31,6 +31,6 @@ body {
 
 #content {
     position: relative;
-    overflow-y: scroll;
+    
     height: 100%;             
 }

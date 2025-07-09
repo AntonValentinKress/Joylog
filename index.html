@@ -73,6 +73,9 @@
                 display: flex;
                 flex-direction: column;
                 gap: 1rem;
+                height: 80vh;              /* z. B. für Scrollbereich */
+                overflow-y: auto;          /* wichtig für Scroll-Erkennung */
+                padding: 1rem;
             }
         </style>
 
@@ -81,22 +84,40 @@
 
     <template id="joylog-entry">
         <style>
+            .text {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                white-space: normal;
+            }
+
             .entry {
                 border: 1px solid #ccc;
                 border-radius: 8px;
                 padding: 1rem;
                 background: #fafafa;
+                background-color: transparent;
+                width: 83vw
             }
             img {
                 max-width: 100%;
                 border-radius: 6px;
             }
+
+            :host {
+                opacity: 0;
+                transition: opacity 0.5s ease-in;
+                display: block; /* wichtig, damit der Eintrag sichtbar ist */
+            }
+
+            :host(.visible) {
+                opacity: 1;
+            }
         </style>
         <div class="entry">
-            <strong class="date"></strong><br/>
-            <span class="score"></span><br/>
-            <p class="text"></p>
+            <strong class="date"></strong>
             <img class="file" />
+            <span class="score"></span>
+            <p class="text"></p>
         </div>
     </template>
 
@@ -208,10 +229,18 @@
                 pointer-events: none; /* damit output nicht klickbar ist */
             }
 
+        #form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 100%;              /* z. B. für Scrollbereich */
+            overflow-y: auto;          /* wichtig für Scroll-Erkennung */
+        }
+
 
         </style>
-        <div>
-            <form action="http://localhost:8000/submit" method="POST">
+        <div id="form-container">
+            <form action="/submit" method="POST">
                 <fieldset>
                     <legend>Datum</legend>
                     <input type="date" id="date" class="minimal-input" name="date" required />
