@@ -261,11 +261,13 @@ class JoylogEntry extends HTMLElement {
             .getElementById('joylog-entry')
             .content.cloneNode(true);
         this.attachShadow({ mode: 'open' }).appendChild(template);
+        this._id = null; //Property für ID
     }
 
     set data(entry) {
-        this.shadowRoot.querySelector('.id').textContent = `#-${entry.id.toString().padStart(4, '0')}`;
-        this.shadowRoot.querySelector('.date').textContent = entry.date;
+        this._id = entry.id;
+        this.shadowRoot.querySelector('.id').textContent = `#${entry.id.toString().padStart(4, '0')}`;
+        this.shadowRoot.querySelector('.date').textContent = new Date(entry.date).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
         this.shadowRoot.querySelector('.score').textContent = entry.score;
         this.shadowRoot.querySelector('.text').innerHTML = entry.text.replace(/\n/g, '<br>');;
 
@@ -283,6 +285,15 @@ class JoylogEntry extends HTMLElement {
         if (textElement) {
             textElement.addEventListener('click', () => {
                 textElement.classList.toggle('expanded');
+            });
+        }
+
+        // Funktion pro Entry auf Basis der jeweiligen ID
+        const idButton = this.shadowRoot.querySelector('.id');
+        if (idButton) {
+            idButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Verhindert, dass andere Handler hochgehen (optional)
+                console.log(this._id); // Loggt die unformatierte ID als Zahl
             });
         }
     }

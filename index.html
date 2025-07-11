@@ -107,7 +107,7 @@
                 white-space: pre-wrap;
                 padding: 5px;
                 margin: 0px;
-                max-height: 5em; /* oder z.B. 10em, je nach gewünschter Vorschaugröße */
+                max-height: 5em; /* kleine Vorschau */
                 overflow: hidden;
                 position: relative;
                 cursor: pointer;
@@ -118,11 +118,12 @@
                 transition: max-height 0.5s ease;
             }
             .text.expanded {
-                max-height: none;
+                max-height: 100em; /* großer Wert für Animation */
                 mask-image: none;
                 -webkit-mask-image: none;
                 cursor: auto;
             }
+
 
             .entry {
                 border: 1px solid #ccc;
@@ -152,7 +153,7 @@
 
             .top-row {
                 display: grid;
-                grid-template-columns: 1fr 4fr;
+                grid-template-columns: 4fr 1fr;
                 padding: 0px;
                 margin: 0px;
             }
@@ -161,10 +162,16 @@
                 background-color: white;
                 color: black;
                 border-radius: 5px;
+                border: 1px solid white;
+                cursor: pointer;
+            }
+
+            .id:hover {
+                border: 1px solid grey;
             }
 
             .date {
-                text-align: right;
+                text-align: left;
                 width: 100%;
             }
 
@@ -183,7 +190,7 @@
         </style>
 
         <fieldset class="entry">
-            <legend class="id"></legend>
+            <legend><button class="id"></button></legend>
             <div class="top-row">
                 <strong class="date"></strong>
             </div>
