@@ -1,1 +1,12 @@
-deno run --allow-net --allow-read --allow-write --allow-run --allow-sys server.ts
+# Deno Serve Command mit allen Berechtigungen
+deno serve --allow-net --allow-read --allow-write --allow-run --allow-sys server.ts
+
+# SystemCTL Service
+-> Deaktivieren (neustart RaspberryPi erforderlich)
+sudo systemctl disable deno-server
+
+-> Aktivieren
+sudo systemctl enable deno-server
+
+-> Alle Dienste einsehen
+systemctl --user list-units --type=service
